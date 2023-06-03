@@ -1,13 +1,15 @@
 package com.example.calculatorpucpr
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.example.calculatorpucpr.databinding.ActivityMainBinding
+import net.objecthunter.exp4j.ExpressionBuilder
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
-    private val expressions = arrayOf("+", "-", "/", "*", "%", "=")
+    private val expressions = arrayOf("+", "-", "/", "*", "%")
+    private val aux = StringBuilder()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // clear button
-        binding.clearButton.setOnClickListener { binding.textViewResult.text = "0" }
+        binding.clearButton.setOnClickListener { clearAll() }
 
         // numbers
         binding.buttonZero.setOnClickListener { incrementValue("0") }
@@ -28,20 +30,48 @@ class MainActivity : AppCompatActivity() {
         binding.buttonSeven.setOnClickListener { incrementValue("7") }
         binding.buttonEight.setOnClickListener { incrementValue("8") }
         binding.buttonNine.setOnClickListener { incrementValue("9") }
+        binding.buttonDot.setOnClickListener { incrementValue(".") }
 
         // expressions
         binding.buttonPlus.setOnClickListener { incrementValue("+") }
-        binding.buttonDot.setOnClickListener { incrementValue(".") }
-        binding.buttonEquals.setOnClickListener { incrementValue("=") }
+        binding.buttonMinus.setOnClickListener { incrementValue("-") }
+        binding.buttonDivide.setOnClickListener { incrementValue("/") }
+        binding.buttonPercent.setOnClickListener { incrementValue("%") }
+        binding.buttonMultiple.setOnClickListener { incrementValue("*") }
+        binding.buttonEquals.setOnClickListener { showResult() }
+    }
+
+    private fun showResult() {
+        aux.append(binding.textViewExpression.text)
+        val result = ExpressionBuilder(aux.toString()).build().evaluate()
+
+        val decimalPart = result.toString().substringAfter('.')
+        val decimalValue = decimalPart.toDouble()
+
+        if (decimalValue > 0) {
+            binding.textViewExpression.text = result.toString()
+        } else {
+            binding.textViewExpression.text = result.toInt().toString()
+        }
+
+    }
+
+    private fun clearAll() {
+        binding.textViewExpression.text = "0"
+        aux.clear()
     }
 
     private fun incrementValue(value: String) {
-        if (binding.textViewResult.text.toString() == "0") {
-            binding.textViewResult.text = value
+
+        if (binding.textViewExpression.text.toString() == "0") {
+            binding.textViewExpression.text = value
             return
         }
 
         if (expressions.contains(value)) {
+            aux.append(binding.textViewExpression.text)
+            aux.append(value)
+            binding.textViewExpression.text = ""
             return
         } else {
             appendExpression(value)
@@ -49,7 +79,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun appendExpression(value: String) {
-        binding.textViewResult.append(value)
+        binding.textViewExpression.append(value)
     }
 
 }
